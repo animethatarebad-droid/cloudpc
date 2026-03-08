@@ -13,25 +13,27 @@ jobs:
       run: |
         sudo apt update
 
-    - name: Install desktop + browser + audio
+    - name: Install desktop
       run: |
         sudo apt install -y xfce4 xfce4-goodies
         sudo apt install -y chromium-browser
         sudo apt install -y x11vnc xvfb
         sudo apt install -y pulseaudio alsa-utils
-        sudo apt install -y wget curl git
-
-    - name: Start audio
-      run: |
-        pulseaudio --start
+        sudo apt install -y git curl wget npm
 
     - name: Start virtual display
       run: |
         Xvfb :1 -screen 0 1280x720x16 &
+        sleep 2
+
+    - name: Start desktop session
+      run: |
+        export DISPLAY=:1
+        startxfce4 &
 
     - name: Start VNC server
       run: |
-        x11vnc -display :1 -nopw -listen localhost -xkb -forever -shared &
+        x11vnc -display :1 -nopw -forever -shared -rfbport 5900 &
 
     - name: Install noVNC
       run: |
@@ -43,14 +45,10 @@ jobs:
         cd noVNC
         ./utils/novnc_proxy --vnc localhost:5900 &
 
-    - name: Install tunnel
+    - name: Create public link
       run: |
-        sudo npm install -g localtunnel
+        npx localtunnel --port 6080 &
 
-    - name: Create public desktop link
-      run: |
-        lt --port 6080 &
-
-    - name: Keep machine alive
+    - name: Keep alive
       run: |
         sleep 21600
