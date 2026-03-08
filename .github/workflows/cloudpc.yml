@@ -47,7 +47,9 @@ jobs:
 
     - name: Create public link
       run: |
-        npx localtunnel --port 6080 &
+        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+        chmod +x cloudflared
+        ./cloudflared tunnel --url http://localhost:6080
 
     - name: Keep alive
       run: |
