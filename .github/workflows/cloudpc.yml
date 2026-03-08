@@ -6,24 +6,51 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
 
-    - name: Install Desktop
+    - name: Update system
       run: |
         sudo apt update
-        sudo apt install -y xfce4 xfce4-goodies chromium-browser x11vnc xvfb
 
-    - name: Setup VNC
+    - name: Install desktop + browser + audio
+      run: |
+        sudo apt install -y xfce4 xfce4-goodies
+        sudo apt install -y chromium-browser
+        sudo apt install -y x11vnc xvfb
+        sudo apt install -y pulseaudio alsa-utils
+        sudo apt install -y wget curl git
+
+    - name: Start audio
+      run: |
+        pulseaudio --start
+
+    - name: Start virtual display
       run: |
         Xvfb :1 -screen 0 1280x720x16 &
+
+    - name: Start VNC server
+      run: |
         x11vnc -display :1 -nopw -listen localhost -xkb -forever -shared &
 
     - name: Install noVNC
       run: |
         git clone https://github.com/novnc/noVNC.git
+        git clone https://github.com/novnc/websockify noVNC/utils/websockify
+
+    - name: Start noVNC
+      run: |
         cd noVNC
         ./utils/novnc_proxy --vnc localhost:5900 &
 
-    - name: Keep alive
+    - name: Install tunnel
+      run: |
+        sudo npm install -g localtunnel
+
+    - name: Create public desktop link
+      run: |
+        lt --port 6080 &
+
+    - name: Keep machine alive
       run: |
         sleep 21600
