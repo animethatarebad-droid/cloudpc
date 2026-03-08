@@ -1,0 +1,29 @@
+name: Cloud PC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Install Desktop
+      run: |
+        sudo apt update
+        sudo apt install -y xfce4 xfce4-goodies chromium-browser x11vnc xvfb
+
+    - name: Setup VNC
+      run: |
+        Xvfb :1 -screen 0 1280x720x16 &
+        x11vnc -display :1 -nopw -listen localhost -xkb -forever -shared &
+
+    - name: Install noVNC
+      run: |
+        git clone https://github.com/novnc/noVNC.git
+        cd noVNC
+        ./utils/novnc_proxy --vnc localhost:5900 &
+
+    - name: Keep alive
+      run: |
+        sleep 21600
